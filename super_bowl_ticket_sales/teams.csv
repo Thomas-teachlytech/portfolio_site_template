@@ -1,0 +1,13 @@
+team_id,team_name,market_size,stadium_capacity
+T01,St. Louis Comets,Medium,20611
+T02,Austin Rattlers,Small,17433
+T03,Denver Peaks,Medium,20311
+T04,Seattle Tide,Medium,20051
+T05,Phoenix Heat Wave,Large,16184
+T06,Chicago Steel,Large,19555
+T07,Atlanta Flux,Large,18385
+T08,Boston Anchors,Small,19117
+T09,Portland Pines,Medium,19843
+T10,Miami Current,Medium,17904
+T11,Minneapolis Frost,Large,15474
+T12,Nashville Sound,Small,16082
