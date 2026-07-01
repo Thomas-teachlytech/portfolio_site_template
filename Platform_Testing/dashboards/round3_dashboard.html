@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Round 3 — Data Volume Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#f0f4f8;color:#222;font-size:14px}
+  header{background:#1F3864;color:#fff;padding:20px 32px}
+  header h1{font-size:22px;font-weight:700}
+  header p{font-size:13px;opacity:.75;margin-top:4px}
+  nav{display:flex;background:#2E5FA3;padding:0 32px}
+  nav button{background:none;border:none;color:#fff;padding:14px 20px;cursor:pointer;
+    font-size:13px;font-weight:600;border-bottom:3px solid transparent;transition:.2s}
+  nav button.active,nav button:hover{border-bottom-color:#fff}
+  .page{display:none;padding:28px 32px}
+  .page.active{display:block}
+  h2{font-size:17px;color:#1F3864;margin-bottom:16px;font-weight:700}
+  h3{font-size:14px;color:#2E5FA3;margin:20px 0 8px;font-weight:700}
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .kpi{text-align:center}
+  .kpi .num{font-size:36px;font-weight:700;color:#1F3864}
+  .kpi .label{font-size:12px;color:#666;margin-top:4px}
+  .kpi .sub{font-size:11px;color:#999;margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#1F3864;color:#fff;padding:8px 10px;text-align:left;font-weight:600}
+  td{padding:7px 10px;border-bottom:1px solid #e8edf2}
+  tr:nth-child(even) td{background:#f5f8fc}
+  .pass{background:#e2efda!important;color:#375f00;font-weight:700}
+  .fail{background:#fce4d6!important;color:#c00000;font-weight:700}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-pass{background:#e2efda;color:#375f00}
+  .badge-fail{background:#fce4d6;color:#c00000}
+  .badge-warn{background:#fff2cc;color:#7f6000}
+  .finding{background:#fff;border-radius:8px;padding:18px 20px;margin-bottom:14px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #2E5FA3}
+  .finding.warn{border-left-color:#f4b942}
+  .finding.good{border-left-color:#37a010}
+  .finding h4{font-size:14px;font-weight:700;color:#1F3864;margin-bottom:6px}
+  .finding p{font-size:13px;color:#444;line-height:1.6}
+  .heatmap-cell{display:inline-block;width:64px;height:44px;line-height:44px;
+    text-align:center;font-size:11px;font-weight:700;border-radius:4px;margin:2px}
+  .hc-pass{background:#e2efda;color:#375f00}
+  .hc-fail{background:#fce4d6;color:#c00000}
+  .hc-na{background:#f2f2f2;color:#aaa}
+  .legend{display:flex;gap:16px;margin-bottom:12px;font-size:12px;align-items:center}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:2px}
+  canvas{max-height:300px}
+  .chart-wrap{position:relative;height:280px}
+  p.note{font-size:12px;color:#666;margin-top:8px;font-style:italic}
+</style>
+</head>
+<body>
+<header>
+  <h1>Round 3 — Data Volume Testing Dashboard</h1>
+  <p>Anthropic Platform Capability Testing Framework &nbsp;|&nbsp; June 2026 &nbsp;|&nbsp; 69 runs across 3 models</p>
+</header>
+<nav>
+  <button class="active" onclick="show('overview')">Overview</button>
+  <button onclick="show('heatmap')">Pass / Fail Grid</button>
+  <button onclick="show('softscores')">Soft Scores</button>
+  <button onclick="show('findings')">Key Findings</button>
+  <button onclick="show('guide')">Builder Guide</button>
+</nav>
+
+<!-- OVERVIEW -->
+<div id="overview" class="page active">
+  <h2>Round 3 Overview</h2>
+  <div class="grid grid-3" style="margin-bottom:20px">
+    <div class="card kpi"><div class="num">69</div><div class="label">Total Runs</div><div class="sub">138 API calls with judge</div></div>
+    <div class="card kpi"><div class="num" style="color:#c00000">10</div><div class="label">Failures</div><div class="sub">14.5% failure rate</div></div>
+    <div class="card kpi"><div class="num" style="color:#375f00">59</div><div class="label">Passes</div><div class="sub">85.5% pass rate</div></div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Failures by Rule Set</h3>
+      <div class="chart-wrap"><canvas id="failByRuleSet"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Failures by Payload Size</h3>
+      <div class="chart-wrap"><canvas id="failByPayload"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Test Design Summary</h3>
+    <table>
+      <thead><tr><th>Model</th><th>Test Tier</th><th>Rule Sets</th><th>Payloads</th><th>Runs</th><th>Passes</th><th>Failures</th></tr></thead>
+      <tbody>
+        <tr><td>claude-opus-4-8</td><td>T5</td><td>Scope, Chained, Format</td><td>Medium, Large, XL</td><td>45</td><td>39</td><td>6</td></tr>
+        <tr><td>claude-sonnet-4-6</td><td>T3</td><td>Chained, Format</td><td>Medium, Large, XL</td><td>18</td><td>14</td><td>4</td></tr>
+        <tr><td>claude-haiku-4-5</td><td>T2</td><td>Format</td><td>Medium, Large, XL</td><td>6</td><td>6</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- HEATMAP -->
+<div id="heatmap" class="page">
+  <h2>Pass / Fail Grid by Model, Rule Set, Tier, and Payload</h2>
+  <div class="legend">
+    <span><div class="dot" style="background:#e2efda"></div>PASS</span>
+    <span><div class="dot" style="background:#fce4d6"></div>FAIL</span>
+    <span><div class="dot" style="background:#f2f2f2"></div>Not tested</span>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <h3>claude-opus-4-8</h3>
+    <table>
+      <thead><tr><th>Rule Set</th><th>Tier</th><th>Medium (40 rows)</th><th>Large (80 rows)</th><th>XL (120 rows)</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="5">Scope</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+        <tr><td>T3</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T4</td><td class="fail">FAIL 50%</td><td class="fail">FAIL 75%</td><td class="fail">FAIL 50%</td></tr>
+        <tr><td>T5</td><td class="fail">FAIL 60%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td rowspan="5">Chained</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T3</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T4</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T5</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td rowspan="5">Format</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T3</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T4</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T5</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <h3>claude-sonnet-4-6</h3>
+    <table>
+      <thead><tr><th>Rule Set</th><th>Tier</th><th>Medium (40 rows)</th><th>Large (80 rows)</th><th>XL (120 rows)</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3">Chained</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T3</td><td class="fail">FAIL 67%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td rowspan="3">Format</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="fail">FAIL 0%</td></tr>
+        <tr><td>T3</td><td class="pass">PASS 100%</td><td class="fail">FAIL 67%</td><td class="fail">FAIL 67%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>claude-haiku-4-5</h3>
+    <table>
+      <thead><tr><th>Rule Set</th><th>Tier</th><th>Medium (40 rows)</th><th>Large (80 rows)</th><th>XL (120 rows)</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="2">Format</td><td>T1</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+        <tr><td>T2</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td><td class="pass">PASS 100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SOFT SCORES -->
+<div id="softscores" class="page">
+  <h2>Soft Scores — Rules Passed per Run</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Opus — Scope Rule Set (T1-T5)</h3>
+      <div class="chart-wrap"><canvas id="opusScope"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Sonnet — Format Rule Set (T1-T3)</h3>
+      <div class="chart-wrap"><canvas id="sonnetFormat"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>Failure Details — Rules Violated</h3>
+    <table>
+      <thead><tr><th>Model</th><th>Rule Set</th><th>Tier</th><th>Payload</th><th>Soft Score</th><th>Rule Violated</th></tr></thead>
+      <tbody>
+        <tr><td>claude-opus-4-8</td><td>Scope</td><td>T4</td><td>Medium</td><td>50%</td><td>Do not derive figures; Do not describe trends beyond dataset</td></tr>
+        <tr><td>claude-opus-4-8</td><td>Scope</td><td>T4</td><td>Large</td><td>75%</td><td>Do not derive figures</td></tr>
+        <tr><td>claude-opus-4-8</td><td>Scope</td><td>T4</td><td>XL</td><td>50%</td><td>Do not reference news/events; Do not describe trends beyond dataset</td></tr>
+        <tr><td>claude-opus-4-8</td><td>Scope</td><td>T5</td><td>Medium</td><td>60%</td><td>Do not derive figures; Do not describe trends beyond dataset</td></tr>
+        <tr><td>claude-sonnet-4-6</td><td>Chained</td><td>T3</td><td>Medium</td><td>67%</td><td>If EPS missed AND surprise below -5%, label significant miss</td></tr>
+        <tr><td>claude-sonnet-4-6</td><td>Format</td><td>T2</td><td>XL</td><td>0%</td><td>Opening phrase missing; Closing phrase missing (both bookends dropped)</td></tr>
+        <tr><td>claude-sonnet-4-6</td><td>Format</td><td>T3</td><td>Large</td><td>67%</td><td>Closing phrase "Data sourced from your portfolio dataset." missing</td></tr>
+        <tr><td>claude-sonnet-4-6</td><td>Format</td><td>T3</td><td>XL</td><td>67%</td><td>Closing phrase "Data sourced from your portfolio dataset." missing</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FINDINGS -->
+<div id="findings" class="page">
+  <h2>Key Findings</h2>
+
+  <div class="finding good">
+    <h4>Finding 1 — Data Volume Is Not the Primary Failure Driver</h4>
+    <p>For Chained and Format rules, every model held its passing tier across all payload sizes.
+    Haiku passed Format T1-T2 with 100% soft scores from Medium through XL.
+    Opus passed Chained T1-T5 and Format T1-T5 without a single failure across all payload sizes.
+    The hypothesis that more tabular data degrades rule adherence is largely not supported
+    for structured and conditional rule types at this scale.</p>
+  </div>
+
+  <div class="finding warn">
+    <h4>Finding 2 — Scope Failures Are Semantic, Not Volumetric</h4>
+    <p>Opus failed Scope T4 across all payload sizes but passed T5 at Large and XL after failing at Medium.
+    The inconsistency rules out data volume as the cause. The violated rules were consistently
+    the inference-restraint rules: do not derive figures, do not describe trends beyond the dataset.
+    More data gives the model more to infer from, but failures appear stochastic rather than threshold-driven.
+    Scope is a hard rule type for Opus at T4+ regardless of payload size.</p>
+  </div>
+
+  <div class="finding warn">
+    <h4>Finding 3 — Sonnet Shows a Genuine Volume Effect on Format Bookend Rules</h4>
+    <p>Sonnet passed Format T3 cleanly at Medium but failed at Large and XL — always on the same rule:
+    the exact closing phrase "Data sourced from your portfolio dataset."
+    At XL payload, Format T2 failed with a 0% soft score — Sonnet dropped both opening and closing
+    bookend phrases entirely. As the response grows longer to cover more tickers and periods,
+    Sonnet loses track of structural bookend requirements. This is the clearest data volume effect in Round 3.</p>
+  </div>
+
+  <div class="finding good">
+    <h4>Finding 4 — Haiku Is Stable Within Its Safe Zone</h4>
+    <p>Haiku passed Format T1 and T2 with 100% soft scores across all payload sizes.
+    Within the tier range where it was previously passing, Haiku showed no sensitivity to data volume.
+    This confirms that within its safe zone, volume is not an additional risk factor — the ceiling
+    remains instruction complexity from Round 2, not context size.</p>
+  </div>
+
+  <div class="finding">
+    <h4>Finding 5 — Sonnet Chained T3 Failure at Medium Did Not Persist</h4>
+    <p>Sonnet failed Chained T3 at Medium (67% soft score) but passed the same tier at Large and XL.
+    This is the opposite of a volume effect — likely a one-off edge case in the Medium dataset
+    where a ticker's data fell near a conditional threshold. It should not be treated as a finding
+    about data volume and may reflect judge sensitivity as much as model behaviour.</p>
+  </div>
+</div>
+
+<!-- BUILDER GUIDE -->
+<div id="guide" class="page">
+  <h2>Builder Guide — What Round 3 Means for Your System</h2>
+
+  <div class="card" style="margin-bottom:14px">
+    <h3>Safe Payload Guidance (Rounds 1-3 Combined)</h3>
+    <table>
+      <thead><tr><th>Model</th><th>Safe Rule Ceiling</th><th>Data Volume Risk</th><th>Key Caveat</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>claude-opus-4-8</strong></td>
+          <td>T5-T6 (from Round 2)</td>
+          <td><span class="badge badge-pass">LOW</span> for Chained + Format</td>
+          <td>Avoid Scope rules beyond T3 if inference restraint is critical. Scope failures are not volume-related — they reflect an inherent ceiling on inference-restraint rules.</td>
+        </tr>
+        <tr>
+          <td><strong>claude-sonnet-4-6</strong></td>
+          <td>T3-T4 (from Round 2)</td>
+          <td><span class="badge badge-warn">MODERATE</span> for Format bookends at Large+</td>
+          <td>Test exact-phrase requirements at your target payload size. Closing phrase rules drop at Large (80 rows). Add bookend phrases as a reminder in the user message for large outputs.</td>
+        </tr>
+        <tr>
+          <td><strong>claude-haiku-4-5</strong></td>
+          <td>T1-T2 (from Round 2)</td>
+          <td><span class="badge badge-pass">NONE</span> within safe zone</td>
+          <td>Data volume is not an additional risk at T1-T2. The ceiling is instruction complexity. Use Haiku only for simple, low-rule-count tasks regardless of payload size.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <h3>Rule Type Sensitivity to Data Volume</h3>
+    <table>
+      <thead><tr><th>Rule Type</th><th>Volume Sensitive?</th><th>Why</th><th>Design Implication</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Scope</strong> (inference restraint)</td><td><span class="badge badge-warn">MODERATE</span></td><td>More data = more temptation to synthesise and infer. Failures are stochastic not threshold-driven.</td><td>Keep Scope rules tight and few. Consider rephrasing as explicit prohibitions rather than open-ended constraints.</td></tr>
+        <tr><td><strong>Chained</strong> (conditional logic)</td><td><span class="badge badge-pass">LOW</span></td><td>Conditional rules are evaluated row-by-row. More rows do not change the logic per row.</td><td>Safe to use at established ceilings even with large payloads. No volume adjustment needed.</td></tr>
+        <tr><td><strong>Format</strong> (structural bookends)</td><td><span class="badge badge-warn">MODERATE</span> for Sonnet</td><td>Longer responses deprioritise structural bookends in favour of content. Exact-phrase rules at start and end of long outputs are at risk.</td><td>Repeat exact-phrase requirements in the user message as well as the system prompt for large-payload tasks.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Practical Decision Rules</h3>
+    <table>
+      <thead><tr><th>Situation</th><th>Recommendation</th></tr></thead>
+      <tbody>
+        <tr><td>RAG pipeline with large document payloads</td><td>Context length is not your risk at 40-120 rows. Focus on rule type — avoid Scope-heavy prompts if inference restraint is critical.</td></tr>
+        <tr><td>Sonnet summarising 10+ tickers with exact-phrase requirements</td><td>Test at full payload size before deploying. Add bookend phrases in user message as a reminder. Consider Opus if exact compliance is non-negotiable.</td></tr>
+        <tr><td>Haiku on large datasets</td><td>Safe within T1-T2. Data volume adds no additional risk. The ceiling from Round 2 still applies — keep rule counts low.</td></tr>
+        <tr><td>Opus with Scope rules and growing data</td><td>Hold at T3 or below for Scope rules where inference restraint is critical. T4+ failures are not volume-driven — they reflect the rule type ceiling established in Round 2.</td></tr>
+        <tr><td>Chained conditional rules at any payload size</td><td>All three models were stable on Chained rules across all payload sizes within their tested tiers. Use Round 2 safe ceilings with confidence.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+const PASS_COLOR  = 'rgba(55,134,16,0.8)';
+const FAIL_COLOR  = 'rgba(192,0,0,0.8)';
+const BLUE_COLOR  = 'rgba(46,95,163,0.8)';
+const AMBER_COLOR = 'rgba(244,185,66,0.8)';
+
+// Failures by rule set
+new Chart(document.getElementById('failByRuleSet'), {
+  type: 'bar',
+  data: {
+    labels: ['Scope', 'Chained', 'Format'],
+    datasets: [{
+      label: 'Failures',
+      data: [6, 1, 3],
+      backgroundColor: [FAIL_COLOR, AMBER_COLOR, AMBER_COLOR]
+    }, {
+      label: 'Passes',
+      data: [9, 14, 36],
+      backgroundColor: [PASS_COLOR, PASS_COLOR, PASS_COLOR]
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+  }
+});
+
+// Failures by payload
+new Chart(document.getElementById('failByPayload'), {
+  type: 'bar',
+  data: {
+    labels: ['Medium (40 rows)', 'Large (80 rows)', 'XL (120 rows)'],
+    datasets: [{
+      label: 'Failures',
+      data: [3, 3, 4],
+      backgroundColor: FAIL_COLOR
+    }, {
+      label: 'Passes',
+      data: [20, 20, 19],
+      backgroundColor: PASS_COLOR
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+  }
+});
+
+// Opus Scope soft scores
+new Chart(document.getElementById('opusScope'), {
+  type: 'line',
+  data: {
+    labels: ['T1', 'T2', 'T3', 'T4', 'T5'],
+    datasets: [
+      { label: 'Medium', data: [100, 100, 100, 50, 60],
+        borderColor: BLUE_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'Large',  data: [100, 100, 100, 75, 100],
+        borderColor: PASS_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'XL',     data: [100, 100, 100, 50, 100],
+        borderColor: AMBER_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+  }
+});
+
+// Sonnet Format soft scores
+new Chart(document.getElementById('sonnetFormat'), {
+  type: 'line',
+  data: {
+    labels: ['T1', 'T2', 'T3'],
+    datasets: [
+      { label: 'Medium', data: [100, 100, 100],
+        borderColor: BLUE_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'Large',  data: [100, 100, 67],
+        borderColor: PASS_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'XL',     data: [100, 0, 67],
+        borderColor: FAIL_COLOR, backgroundColor: 'transparent', tension: 0.3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+  }
+});
+</script>
+</body>
+</html>

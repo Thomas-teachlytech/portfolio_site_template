@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic Platform Report — Round 1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f5f4f0;
+    color: #2d2d2d;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* header */
+  .header { border-bottom: 1px solid #ddd; padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+  .header-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+  .header-title { font-size: 26px; font-weight: 500; color: #1f3864; line-height: 1.2; margin-bottom: 4px; }
+  .header-sub { font-size: 13px; color: #666; }
+  .header-meta { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .meta-pill { font-size: 11px; background: #e8ecf4; color: #2e5fa3; padding: 3px 10px; border-radius: 20px; }
+
+  /* section label */
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: #888; margin: 2rem 0 0.7rem; }
+
+  /* metric cards */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .metric-card { background: #fff; border: 0.5px solid #ddd; border-radius: 10px; padding: 1rem 1.1rem; }
+  .metric-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .metric-val { font-size: 22px; font-weight: 500; color: #1f3864; }
+  .metric-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+
+  /* model cards */
+  .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .model-card { background: #fff; border: 0.5px solid #ddd; border-radius: 10px; padding: 1rem 1.1rem; }
+  .model-name { font-size: 11px; color: #888; margin-bottom: 6px; }
+  .model-score { font-size: 28px; font-weight: 500; color: #1f3864; }
+  .model-raw { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .model-bar-wrap { margin-top: 8px; background: #f0f0f0; border-radius: 4px; height: 5px; }
+  .model-bar { height: 5px; border-radius: 4px; }
+
+  /* chart containers */
+  .chart-wrap { background: #fff; border: 0.5px solid #ddd; border-radius: 10px; padding: 1.25rem; margin-bottom: 12px; }
+  .chart-title { font-size: 12px; font-weight: 500; color: #444; margin-bottom: 12px; }
+  .chart-canvas-wrap { position: relative; width: 100%; }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* formula box */
+  .formula-box { background: #eef2f9; border-left: 3px solid #2e5fa3; border-radius: 0 8px 8px 0; padding: 0.9rem 1.1rem; margin: 0.5rem 0 1.25rem; }
+  .formula-box p { font-size: 12px; color: #2d2d2d; line-height: 1.8; }
+  .formula-box code { font-family: "SF Mono", "Fira Code", monospace; font-size: 12px; background: rgba(46,95,163,0.1); padding: 1px 5px; border-radius: 3px; color: #1f3864; }
+
+  /* findings */
+  .finding { border-left: 3px solid #2e5fa3; padding: 0.6rem 0 0.6rem 1rem; margin-bottom: 1rem; }
+  .finding.warn { border-color: #c0622a; }
+  .finding-title { font-size: 13px; font-weight: 500; color: #1f3864; margin-bottom: 3px; }
+  .finding.warn .finding-title { color: #c0622a; }
+  .finding-body { font-size: 13px; color: #555; line-height: 1.6; }
+
+  /* category weight table */
+  .weight-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .weight-table th { text-align: left; padding: 6px 10px; background: #1f3864; color: #fff; font-weight: 500; font-size: 11px; }
+  .weight-table td { padding: 6px 10px; border-bottom: 0.5px solid #eee; color: #333; }
+  .weight-table tr:nth-child(even) td { background: #f5f8ff; }
+  .weight-bar-cell { width: 120px; }
+  .weight-bar-bg { background: #eee; border-radius: 3px; height: 8px; }
+  .weight-bar-fill { height: 8px; border-radius: 3px; background: #2e5fa3; }
+
+  /* footer */
+  .footer { margin-top: 3rem; padding-top: 1rem; border-top: 0.5px solid #ddd; font-size: 11px; color: #aaa; }
+
+  @media (max-width: 600px) {
+    .model-grid { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .header-title { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <p class="header-eyebrow">Model Capability Testing Framework</p>
+    <h1 class="header-title">Anthropic Platform Report — Round 1</h1>
+    <p class="header-sub">API call · Category-level instruction ladder · Finance domain dataset</p>
+    <div class="header-meta">
+      <span class="meta-pill">3 models</span>
+      <span class="meta-pill">11 categories</span>
+      <span class="meta-pill">7 tiers per category</span>
+      <span class="meta-pill">231 total tiers run</span>
+      <span class="meta-pill">Single-category baseline</span>
+    </div>
+  </div>
+
+  <!-- FORMULAS -->
+  <p class="section-label">Scoring formulas</p>
+  <div class="formula-box">
+    <p><code>Category Weight</code> = total failures across all models ÷ 21 &nbsp;(3 models × 7 tiers)</p>
+    <p><code>Platform Category Score</code> = total passes across all models ÷ 21</p>
+    <p><code>Platform Weighted Score</code> = Σ( platform category score × weight ) ÷ Σ( weights )</p>
+    <p><code>Model Category Score</code> = passes ÷ 7 &nbsp;(for one model in one category)</p>
+    <p><code>Model Weighted Score</code> = Σ( model category score × platform weight ) ÷ Σ( weights )</p>
+  </div>
+
+  <!-- PLATFORM METRICS -->
+  <p class="section-label">Platform overview</p>
+  <div class="metric-grid">
+    <div class="metric-card">
+      <p class="metric-label">Platform weighted score</p>
+      <p class="metric-val">55%</p>
+      <p class="metric-sub">All models · all categories</p>
+    </div>
+    <div class="metric-card">
+      <p class="metric-label">Total tiers run</p>
+      <p class="metric-val">231</p>
+      <p class="metric-sub">11 × 7 × 3 models</p>
+    </div>
+    <div class="metric-card">
+      <p class="metric-label">Total passes</p>
+      <p class="metric-val">191</p>
+      <p class="metric-sub">83% raw pass rate</p>
+    </div>
+    <div class="metric-card">
+      <p class="metric-label">Hardest category</p>
+      <p class="metric-val">Scope</p>
+      <p class="metric-sub">Weight 0.71 · 15/21 failed</p>
+    </div>
+  </div>
+
+  <!-- MODEL SUMMARY -->
+  <p class="section-label">Per model summary</p>
+  <div class="model-grid">
+    <div class="model-card">
+      <p class="model-name">Claude Opus 4.8</p>
+      <p class="model-score" style="color:#1f3864;">77%</p>
+      <p class="model-raw">Weighted · 92% raw (71/77)</p>
+      <div class="model-bar-wrap"><div class="model-bar" style="width:77%;background:#2e5fa3;"></div></div>
+    </div>
+    <div class="model-card">
+      <p class="model-name">Claude Sonnet 4.6</p>
+      <p class="model-score" style="color:#c0622a;">52%</p>
+      <p class="model-raw">Weighted · 84% raw (65/77)</p>
+      <div class="model-bar-wrap"><div class="model-bar" style="width:52%;background:#c0622a;"></div></div>
+    </div>
+    <div class="model-card">
+      <p class="model-name">Claude Haiku 4.5</p>
+      <p class="model-score" style="color:#2d8c4e;">36%</p>
+      <p class="model-raw">Weighted · 71% raw (55/77)</p>
+      <div class="model-bar-wrap"><div class="model-bar" style="width:36%;background:#2d8c4e;"></div></div>
+    </div>
+  </div>
+
+  <!-- CHART 1: raw vs weighted -->
+  <p class="section-label">Raw vs weighted score</p>
+  <div class="chart-wrap">
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2e5fa3;"></span>Raw score</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c0622a;"></span>Weighted score</span>
+    </div>
+    <div class="chart-canvas-wrap" style="height:200px;">
+      <canvas id="c1" role="img" aria-label="Grouped bar chart comparing raw vs weighted scores per model"></canvas>
+    </div>
+  </div>
+
+  <!-- CHART 2: platform pass rate + weight line -->
+  <p class="section-label">Platform pass rate by category</p>
+  <div class="chart-wrap">
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2e5fa3;"></span>Pass rate (passes / 21)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c0622a;"></span>Category weight (line)</span>
+    </div>
+    <div class="chart-canvas-wrap" style="height:260px;">
+      <canvas id="c2" role="img" aria-label="Bar and line chart showing platform pass rate and category weight per category"></canvas>
+    </div>
+  </div>
+
+  <!-- CHART 3: per model per category -->
+  <p class="section-label">Per model performance by category (passes / 7)</p>
+  <div class="chart-wrap">
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2e5fa3;"></span>Opus 4.8</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c0622a;"></span>Sonnet 4.6</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#2d8c4e;"></span>Haiku 4.5</span>
+    </div>
+    <div class="chart-canvas-wrap" style="height:300px;">
+      <canvas id="c3" role="img" aria-label="Grouped bar chart of passes out of 7 per category per model"></canvas>
+    </div>
+  </div>
+
+  <!-- CHART 4: weight horizontal bar -->
+  <p class="section-label">Category weights derived from results</p>
+  <div class="chart-wrap">
+    <div class="chart-canvas-wrap" style="height:240px;">
+      <canvas id="c4" role="img" aria-label="Horizontal bar chart of category weights from highest to lowest"></canvas>
+    </div>
+  </div>
+
+  <!-- CATEGORY WEIGHT TABLE -->
+  <p class="section-label">Category weight detail</p>
+  <div class="chart-wrap" style="padding: 0; overflow: hidden;">
+    <table class="weight-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Opus fails</th>
+          <th>Sonnet fails</th>
+          <th>Haiku fails</th>
+          <th>Total fails / 21</th>
+          <th>Weight</th>
+          <th class="weight-bar-cell"></th>
+        </tr>
+      </thead>
+      <tbody id="weight-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <p class="section-label">Key findings</p>
+
+  <div class="finding warn">
+    <p class="finding-title">Scope is the platform's primary failure point</p>
+    <p class="finding-body">All three models failed Scope from T2 onward. Combined pass rate 6/21 (29%). Weight 0.71 — highest in the suite. Scope alone accounts for most of the gap between raw and weighted scores for Sonnet and Haiku.</p>
+  </div>
+
+  <div class="finding warn">
+    <p class="finding-title">Weighted scores reveal a larger capability gap than raw scores show</p>
+    <p class="finding-body">Raw scores: Opus 92% · Sonnet 84% · Haiku 71% (21-point spread). Weighted scores: Opus 77% · Sonnet 52% · Haiku 36% (41-point spread). Weighting amplifies failures on hard categories and shows the real separation between model tiers.</p>
+  </div>
+
+  <div class="finding">
+    <p class="finding-title">Situation separates model tiers sharply</p>
+    <p class="finding-body">Opus 7/7. Sonnet 5/7. Haiku 1/7. Haiku failed at T1 — before any rule stacking. Conditional detection (if X then Y) appears to require significantly more capacity than Haiku reliably has at any rule count.</p>
+  </div>
+
+  <div class="finding">
+    <p class="finding-title">Chained logic degrades all models — tier of first failure tracks model size</p>
+    <p class="finding-body">Opus first failed at T6. Sonnet at T5. Haiku at T4. Two-condition logic is the clearest discriminator of model capacity within this platform. First failure tier maps directly to model tier.</p>
+  </div>
+
+  <div class="finding">
+    <p class="finding-title">Zero-weight categories cannot differentiate models</p>
+    <p class="finding-body">Content, Style, Priority: perfect scores across all three models at all seven tiers. These categories should be deprioritised in cross-category testing — they contribute no signal about model capability.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Model Capability Testing Framework · Anthropic Platform · Round 1 · Single-category instruction ladder · Finance domain</p>
+    <p style="margin-top:4px;">Methodology based on FollowBench (ACL 2024) and IFEval (Google 2023) with original extensions. Weights are platform-derived and apply only within this platform and dataset.</p>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CAT_LABELS = ['Scope','Chained','Situation','Negation','Persona','Format','Example','Precision','Content','Style','Priority'];
+const CAT_CODES  = ['Sco','Chn','Sit','Neg','Per','Fmt','Exa','Pre','Cnt','Sty','Pri'];
+
+const opusFails   = [3,2,0,0,1,0,0,0,0,0,0];
+const sonnetFails = [6,3,2,1,0,0,0,0,0,0,0];
+const haikuFails  = [6,3,6,3,1,1,1,1,0,0,0];
+
+const platFails  = CAT_CODES.map((_,i) => opusFails[i]+sonnetFails[i]+haikuFails[i]);
+const platPasses = platFails.map(f => 21-f);
+const weights    = platFails.map(f => parseFloat((f/21).toFixed(2)));
+const platRate   = platPasses.map(v => Math.round(v/21*100));
+
+const opusPasses   = [4,5,7,7,6,7,7,7,7,7,7];
+const sonnetPasses = [1,4,5,6,7,7,7,7,7,7,7];
+const haikuPasses  = [1,4,1,4,6,6,6,6,7,7,7];
+
+const opusPct   = opusPasses.map(v => Math.round(v/7*100));
+const sonnetPct = sonnetPasses.map(v => Math.round(v/7*100));
+const haikuPct  = haikuPasses.map(v => Math.round(v/7*100));
+
+const gridColor = 'rgba(0,0,0,0.06)';
+const textColor = '#888';
+const baseScales = {
+  x: { grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}} },
+  y: { grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}}, min:0, max:100 }
+};
+
+// Chart 1 — raw vs weighted
+new Chart(document.getElementById('c1'), {
+  type: 'bar',
+  data: {
+    labels: ['Opus 4.8','Sonnet 4.6','Haiku 4.5'],
+    datasets: [
+      { label:'Raw score',      data:[92,84,71], backgroundColor:'#2e5fa3', borderRadius:4 },
+      { label:'Weighted score', data:[77,52,36], backgroundColor:'#c0622a', borderRadius:4 },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{ ...baseScales, y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>v+'%'}} }
+  }
+});
+
+// Chart 2 — platform pass rate + weight line
+new Chart(document.getElementById('c2'), {
+  type:'bar',
+  data:{
+    labels: CAT_LABELS,
+    datasets:[
+      { label:'Pass rate %', data:platRate, backgroundColor:'#2e5fa3', borderRadius:3, order:1 },
+      { label:'Weight ×100', data:weights.map(w=>Math.round(w*100)), type:'line',
+        borderColor:'#c0622a', backgroundColor:'transparent',
+        pointRadius:4, pointBackgroundColor:'#c0622a', tension:0.3, order:0 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.datasetIndex===0 ? ` Pass rate: ${ctx.parsed.y}%` : ` Weight: ${(ctx.parsed.y/100).toFixed(2)}` } } },
+    scales:{
+      x:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}, maxRotation:30} },
+      y:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}, callback:v=>v+'%'}, min:0, max:100 }
+    }
+  }
+});
+
+// Chart 3 — per model per category
+new Chart(document.getElementById('c3'), {
+  type:'bar',
+  data:{
+    labels: CAT_LABELS,
+    datasets:[
+      { label:'Opus 4.8',   data:opusPct,   backgroundColor:'#2e5fa3', borderRadius:3 },
+      { label:'Sonnet 4.6', data:sonnetPct, backgroundColor:'#c0622a', borderRadius:3 },
+      { label:'Haiku 4.5',  data:haikuPct,  backgroundColor:'#2d8c4e', borderRadius:3 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}, maxRotation:30} },
+      y:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}, callback:v=>v+'%'}, min:0, max:100 }
+    }
+  }
+});
+
+// Chart 4 — weight horizontal bar
+new Chart(document.getElementById('c4'), {
+  type:'bar',
+  data:{
+    labels: CAT_LABELS,
+    datasets:[{
+      label:'Weight',
+      data: weights,
+      backgroundColor: weights.map(w => w>=0.5?'#c0622a': w>=0.3?'#d4843a': w>=0.1?'#2e5fa3': w>0?'#7aa3d4':'#ddd'),
+      borderRadius:4
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx=>' Weight: '+ctx.parsed.x.toFixed(2) } } },
+    scales:{
+      x:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}}, min:0, max:0.8 },
+      y:{ grid:{color:gridColor}, ticks:{color:textColor, font:{size:11}} }
+    }
+  }
+});
+
+// Weight table
+const tbody = document.getElementById('weight-table-body');
+CAT_LABELS.forEach((label, i) => {
+  const w = weights[i];
+  const barWidth = Math.round(w / 0.75 * 100);
+  const barColor = w>=0.5?'#c0622a': w>=0.3?'#d4843a': w>=0.1?'#2e5fa3': w>0?'#7aa3d4':'#ddd';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><strong>${CAT_CODES[i]}</strong> — ${label}</td>
+    <td>${opusFails[i]}/7</td>
+    <td>${sonnetFails[i]}/7</td>
+    <td>${haikuFails[i]}/7</td>
+    <td>${platFails[i]}/21</td>
+    <td><strong>${w.toFixed(2)}</strong></td>
+    <td class="weight-bar-cell">
+      <div class="weight-bar-bg">
+        <div class="weight-bar-fill" style="width:${barWidth}%;background:${barColor};"></div>
+      </div>
+    </td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

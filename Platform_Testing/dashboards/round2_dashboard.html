@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Round 2 — Cross-Category Results Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fa; color: #2d2d2d; }
+
+  .header { background: #1f3864; color: white; padding: 28px 40px 20px; }
+  .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .header p  { font-size: 13px; opacity: 0.75; }
+
+  .tabs { display: flex; gap: 0; background: #162a4e; padding: 0 40px; }
+  .tab  { padding: 10px 22px; font-size: 13px; color: #aac4e8; cursor: pointer; border-bottom: 3px solid transparent; transition: all .2s; }
+  .tab:hover   { color: white; }
+  .tab.active  { color: white; border-bottom-color: #5b9bd5; }
+
+  .content { padding: 28px 40px; max-width: 1400px; margin: 0 auto; }
+  .section  { display: none; }
+  .section.active { display: block; }
+
+  .kpi-row  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi      { background: white; border-radius: 8px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #888; margin-bottom: 6px; }
+  .kpi .value { font-size: 28px; font-weight: 700; }
+  .kpi .sub   { font-size: 11px; color: #888; margin-top: 4px; }
+  .kpi.green .value { color: #1e5c1e; }
+  .kpi.amber .value { color: #7b6000; }
+  .kpi.red   .value { color: #832121; }
+  .kpi.blue  .value { color: #2e5fa3; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .card   { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .card h3 { font-size: 13px; font-weight: 600; color: #1f3864; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .4px; }
+
+  /* Heatmap grid */
+  .heat-wrap { overflow-x: auto; }
+  table.heat { border-collapse: collapse; width: 100%; font-size: 12px; }
+  table.heat th { background: #1f3864; color: white; padding: 7px 10px; text-align: center; font-weight: 600; font-size: 11px; }
+  table.heat th.left { text-align: left; }
+  table.heat td { padding: 6px 10px; border: 1px solid #e8ecf2; text-align: center; font-size: 11px; }
+  table.heat td.label { text-align: left; font-weight: 600; color: #1f3864; background: #f0f4fb; }
+  table.heat td.band  { text-align: center; font-size: 10px; font-weight: 600; border-radius: 3px; }
+  .pass { background: #e2efda; color: #1e5c1e; font-weight: 700; }
+  .fail { background: #fce4d6; color: #832121; font-weight: 700; }
+  .band-hard    { background: #fce4d6; color: #832121; }
+  .band-medium  { background: #fff2cc; color: #7b6000; }
+  .band-easy    { background: #e2efda; color: #1e5c1e; }
+  .band-control { background: #e8ecf2; color: #555; }
+
+  .finding { background: white; border-radius: 8px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 16px; border-left: 4px solid #2e5fa3; }
+  .finding.red    { border-left-color: #832121; }
+  .finding.amber  { border-left-color: #7b6000; }
+  .finding.green  { border-left-color: #1e5c1e; }
+  .finding h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #1f3864; }
+  .finding p  { font-size: 12px; line-height: 1.6; color: #444; }
+
+  .model-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-right: 4px; }
+  .opus   { background: #1f3864; color: white; }
+  .sonnet { background: #2e5fa3; color: white; }
+  .haiku  { background: #5b9bd5; color: white; }
+
+  .guide-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .guide-table th { background: #1f3864; color: white; padding: 8px 12px; text-align: left; font-size: 11px; }
+  .guide-table td { padding: 8px 12px; border-bottom: 1px solid #e8ecf2; vertical-align: top; }
+  .guide-table tr:nth-child(even) td { background: #f8fafc; }
+  .safe   { color: #1e5c1e; font-weight: 700; }
+  .unsafe { color: #832121; font-weight: 700; }
+  .warn   { color: #7b6000; font-weight: 700; }
+
+  canvas { max-height: 280px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Round 2 — Cross-Category Instruction Testing</h1>
+  <p>Anthropic Platform &nbsp;|&nbsp; Finance Domain &nbsp;|&nbsp; 8 combinations &times; 7 tiers &times; 3 models &nbsp;|&nbsp; 336 API calls</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('overview')">Overview</div>
+  <div class="tab" onclick="show('heatmap')">Pass / Fail Heatmap</div>
+  <div class="tab" onclick="show('softscores')">Soft Scores</div>
+  <div class="tab" onclick="show('findings')">Key Findings</div>
+  <div class="tab" onclick="show('guide')">Builder Guide</div>
+</div>
+
+<div class="content">
+
+<!-- ── OVERVIEW ── -->
+<div id="overview" class="section active">
+  <div class="kpi-row">
+    <div class="kpi green">
+      <div class="label">Opus 4.8 Pass Rate</div>
+      <div class="value" id="kpi-opus"></div>
+      <div class="sub">across all combos &amp; tiers</div>
+    </div>
+    <div class="kpi amber">
+      <div class="label">Sonnet 4.6 Pass Rate</div>
+      <div class="value" id="kpi-sonnet"></div>
+      <div class="sub">across all combos &amp; tiers</div>
+    </div>
+    <div class="kpi red">
+      <div class="label">Haiku 4.5 Pass Rate</div>
+      <div class="value" id="kpi-haiku"></div>
+      <div class="sub">across all combos &amp; tiers</div>
+    </div>
+    <div class="kpi blue">
+      <div class="label">Total Runs</div>
+      <div class="value">168</div>
+      <div class="sub">8 combos × 7 tiers × 3 models</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Pass rate by model</h3>
+      <canvas id="chartModelPass"></canvas>
+    </div>
+    <div class="card">
+      <h3>Pass rate by combination</h3>
+      <canvas id="chartComboPass"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Pass rate by band</h3>
+      <canvas id="chartBandPass"></canvas>
+    </div>
+    <div class="card">
+      <h3>Failures by tier (all models combined)</h3>
+      <canvas id="chartTierFail"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ── HEATMAP ── -->
+<div id="heatmap" class="section">
+  <div class="card">
+    <h3>Pass / Fail — Opus 4.8</h3>
+    <div class="heat-wrap" id="heat-opus"></div>
+  </div>
+  <br>
+  <div class="card">
+    <h3>Pass / Fail — Sonnet 4.6</h3>
+    <div class="heat-wrap" id="heat-sonnet"></div>
+  </div>
+  <br>
+  <div class="card">
+    <h3>Pass / Fail — Haiku 4.5</h3>
+    <div class="heat-wrap" id="heat-haiku"></div>
+  </div>
+</div>
+
+<!-- ── SOFT SCORES ── -->
+<div id="softscores" class="section">
+  <div class="grid-3" id="softCharts"></div>
+</div>
+
+<!-- ── FINDINGS ── -->
+<div id="findings" class="section">
+  <div class="finding red">
+    <h4>Finding 1 — Scope dominates on Sonnet and Haiku from T1</h4>
+    <p>Every Scope combination (H1, M1, M2, M3) failed at T1 on <span class="model-tag sonnet">Sonnet</span> and failed frequently on <span class="model-tag haiku">Haiku</span>. The grounding rule — "use only figures explicitly stated in the data" — was violated before any other rule was added. Adding Chained or Situation rules alongside Scope did not change when failure started. Scope is the ceiling, not the combination. <span class="model-tag opus">Opus</span> held Scope combinations through T5–T6 with isolated single-tier failures only.</p>
+  </div>
+  <div class="finding amber">
+    <h4>Finding 2 — Chained + Situation compounds on Haiku (M4)</h4>
+    <p>M4 (Chained + Situation, no Scope) failed T3–T7 on <span class="model-tag haiku">Haiku</span> — five consecutive tiers. In Round 1, neither Chained nor Situation alone produced this kind of sustained collapse on Haiku. Together they do. This is the clearest compounding signal in the data: two conditional logic categories stacked together exceed what Haiku can track simultaneously. <span class="model-tag sonnet">Sonnet</span> had only a single T2 failure on M4. <span class="model-tag opus">Opus</span> had a single T5 failure.</p>
+  </div>
+  <div class="finding green">
+    <h4>Finding 3 — Opus is resilient but not immune</h4>
+    <p><span class="model-tag opus">Opus</span> had isolated single-tier failures across H1, M1, M2, M4, E1, E2, E3 but recovered in the following tier every time. No consecutive collapse occurred. This means Opus can support complex multi-rule system prompts with a low failure rate — but critical rules still need redundancy because isolated failures do occur even at low tier counts.</p>
+  </div>
+  <div class="finding red">
+    <h4>Finding 4 — Control tests failed on Haiku (warning sign)</h4>
+    <p>E1, E2, and E3 are low or zero weight categories that should pass all seven tiers. <span class="model-tag haiku">Haiku</span> failed E1 at T1, T2, T6, T7 and E2 at T3, T4, T5, T7. This means Haiku is not just struggling with hard categories — it is inconsistent at a basic level with simple rule types. This limits how much you can trust Haiku even for straightforward structured tasks at rule counts above 2.</p>
+  </div>
+  <div class="finding" style="border-left-color:#1f3864">
+    <h4>Finding 5 — Scope did not clearly compound with other categories</h4>
+    <p>The hypothesis was that combining Scope with Chained or Situation would produce earlier failures than Scope alone. The data does not clearly support this. On Sonnet, Scope failed at T1 both alone (Round 1) and in every cross-category combination. The combinations did not make things worse — Scope was already the dominant failure driver regardless of what was paired with it. This is itself a meaningful finding: for grounding-heavy prompts, the model choice matters more than the combination design.</p>
+  </div>
+</div>
+
+<!-- ── BUILDER GUIDE ── -->
+<div id="guide" class="section">
+  <div class="card" style="margin-bottom:20px">
+    <h3>Safe rule count ceilings</h3>
+    <table class="guide-table">
+      <thead><tr><th>Model</th><th>Safe rule count</th><th>Hard ceiling</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="model-tag opus">Opus 4.8</span></td><td class="safe">5–6 rules</td><td>T6</td><td>Recovers from isolated failures. Safe for complex multi-rule prompts.</td></tr>
+        <tr><td><span class="model-tag sonnet">Sonnet 4.6</span></td><td class="warn">3–4 rules</td><td>T3–T4</td><td>Avoid Scope + any other category. Safe for formatting and style stacking.</td></tr>
+        <tr><td><span class="model-tag haiku">Haiku 4.5</span></td><td class="unsafe">1–2 rules only</td><td>T2</td><td>One rule type per prompt. No conditional logic combinations. No Scope.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <h3>Model selection by use case</h3>
+    <table class="guide-table">
+      <thead><tr><th>If your system prompt requires…</th><th>Safe model</th><th>Avoid</th></tr></thead>
+      <tbody>
+        <tr><td>Strict data grounding — stay within provided data only</td><td class="safe">Opus only</td><td class="unsafe">Sonnet, Haiku</td></tr>
+        <tr><td>Conditional logic — if X then Y rules</td><td class="safe">Opus or Sonnet</td><td class="unsafe">Haiku above T2</td></tr>
+        <tr><td>Two conditional rules simultaneously</td><td class="safe">Opus only</td><td class="unsafe">Haiku</td></tr>
+        <tr><td>Formatting and structure rules only</td><td class="safe">Any model</td><td>—</td></tr>
+        <tr><td>Style and tone rules only</td><td class="safe">Any model</td><td>—</td></tr>
+        <tr><td>4 or more rules of any type</td><td class="safe">Opus or Sonnet</td><td class="unsafe">Haiku</td></tr>
+        <tr><td>6 or more rules of any type</td><td class="safe">Opus</td><td class="unsafe">Sonnet, Haiku</td></tr>
+        <tr><td>Simple single-rule task, high volume</td><td class="safe">Haiku (cost-efficient)</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Multi-agent automation — when to automate each step</h3>
+    <table class="guide-table">
+      <thead><tr><th>Step type</th><th>Automate?</th><th>Condition</th></tr></thead>
+      <tbody>
+        <tr><td>Data extraction (Scope rules)</td><td class="unsafe">Opus only</td><td>Haiku/Sonnet grounding failures corrupt downstream steps silently.</td></tr>
+        <tr><td>Formatting and structure</td><td class="safe">Yes — any model</td><td>Zero-weight categories. Failures are rare and non-critical.</td></tr>
+        <tr><td>Conditional detection (Chained / Situation)</td><td class="warn">Sonnet or Opus</td><td>Haiku compounds these. A missed condition propagates silently.</td></tr>
+        <tr><td>Negation and persona enforcement</td><td class="safe">Yes — Sonnet or Opus</td><td>Low failure rate at T2–T3. Safe to automate.</td></tr>
+        <tr><td>Final output to user</td><td class="warn">Human review recommended</td><td>Until you have sufficient production data, gate the last step.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const RESULTS = {"claude-opus-4-8":{"E1":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"E2":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"E3":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"H1":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"FAIL","soft":67},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M1":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"FAIL","soft":50},"7":{"pf":"PASS","soft":100}},"M2":{"1":{"pf":"PASS","soft":100},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M3":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M4":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}}},"claude-sonnet-4-6":{"E1":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"E2":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"E3":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"H1":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"FAIL","soft":75},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M1":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"M2":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"FAIL","soft":50},"3":{"pf":"FAIL","soft":67},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M3":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"PASS","soft":100},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"FAIL","soft":83},"7":{"pf":"FAIL","soft":86}},"M4":{"1":{"pf":"PASS","soft":100},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}}},"claude-haiku-4-5":{"E1":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"FAIL","soft":83},"7":{"pf":"FAIL","soft":71}},"E2":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"FAIL","soft":67},"4":{"pf":"FAIL","soft":75},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"E3":{"1":{"pf":"PASS","soft":100},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"PASS","soft":100},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"H1":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"FAIL","soft":67},"4":{"pf":"FAIL","soft":75},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":71}},"M1":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"FAIL","soft":50},"3":{"pf":"FAIL","soft":67},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"FAIL","soft":86}},"M2":{"1":{"pf":"PASS","soft":100},"2":{"pf":"FAIL","soft":50},"3":{"pf":"FAIL","soft":67},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M3":{"1":{"pf":"FAIL","soft":0},"2":{"pf":"FAIL","soft":50},"3":{"pf":"PASS","soft":100},"4":{"pf":"PASS","soft":100},"5":{"pf":"FAIL","soft":80},"6":{"pf":"PASS","soft":100},"7":{"pf":"PASS","soft":100}},"M4":{"1":{"pf":"PASS","soft":100},"2":{"pf":"PASS","soft":100},"3":{"pf":"FAIL","soft":67},"4":{"pf":"FAIL","soft":50},"5":{"pf":"FAIL","soft":80},"6":{"pf":"FAIL","soft":67},"7":{"pf":"FAIL","soft":86}}}};
+
+const META = {"E1":{"label":"Negation + Persona","cats":"Neg + Per","band":"Easy"},"E2":{"label":"Content + Priority + Style","cats":"Cnt + Pri + Sty","band":"Control"},"E3":{"label":"Format + Precision + Example","cats":"Fmt + Pre + Exa","band":"Control"},"H1":{"label":"Scope + Chained + Situation","cats":"Sco + Chn + Sit","band":"Hard"},"M1":{"label":"Scope + Chained","cats":"Sco + Chn","band":"Medium"},"M2":{"label":"Scope + Situation","cats":"Sco + Sit","band":"Medium"},"M3":{"label":"Scope + Negation","cats":"Sco + Neg","band":"Medium"},"M4":{"label":"Chained + Situation","cats":"Chn + Sit","band":"Medium"}};
+
+const MODELS = ['claude-opus-4-8','claude-sonnet-4-6','claude-haiku-4-5'];
+const MODEL_LABELS = ['Opus 4.8','Sonnet 4.6','Haiku 4.5'];
+const MODEL_COLORS = ['#1e5c1e','#2e5fa3','#832121'];
+const MODEL_BG     = ['#e2efda','#d9e8f5','#fce4d6'];
+const COMBOS = ['H1','M1','M2','M3','M4','E1','E2','E3'];
+const TIERS  = [1,2,3,4,5,6,7];
+
+function passRate(model, combo) {
+  const d = RESULTS[model][combo];
+  const vals = Object.values(d);
+  return Math.round(100 * vals.filter(v=>v.pf==='PASS').length / vals.length);
+}
+
+function overallPassRate(model) {
+  let pass=0, total=0;
+  COMBOS.forEach(c => {
+    Object.values(RESULTS[model][c]).forEach(v => { total++; if(v.pf==='PASS') pass++; });
+  });
+  return Math.round(100*pass/total);
+}
+
+// KPIs
+document.getElementById('kpi-opus').textContent   = overallPassRate('claude-opus-4-8')   + '%';
+document.getElementById('kpi-sonnet').textContent = overallPassRate('claude-sonnet-4-6') + '%';
+document.getElementById('kpi-haiku').textContent  = overallPassRate('claude-haiku-4-5')  + '%';
+
+// Chart helpers
+function mkChart(id, type, labels, datasets, opts={}) {
+  new Chart(document.getElementById(id), {
+    type, data:{labels, datasets},
+    options:{responsive:true, plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}}, ...opts}
+  });
+}
+
+// Model pass rate bar
+mkChart('chartModelPass','bar', MODEL_LABELS,
+  [{label:'Pass Rate %', data: MODELS.map(overallPassRate),
+    backgroundColor: MODEL_BG, borderColor: MODEL_COLORS, borderWidth:2, borderRadius:4}],
+  {scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}, plugins:{legend:{display:false}}}
+);
+
+// Combo pass rate grouped bar
+mkChart('chartComboPass','bar', COMBOS.map(c=>META[c].label.replace(' + ','\n+')),
+  MODELS.map((m,i)=>({
+    label: MODEL_LABELS[i], backgroundColor: MODEL_BG[i],
+    borderColor: MODEL_COLORS[i], borderWidth:1, borderRadius:3,
+    data: COMBOS.map(c=>passRate(m,c))
+  })),
+  {scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}
+);
+
+// Band pass rate
+const bands = {Hard:[], Medium:[], Easy:[], Control:[]};
+MODELS.forEach(m => {
+  const b={Hard:[],Medium:[],Easy:[],Control:[]};
+  COMBOS.forEach(c => {
+    const band = META[c].band;
+    const vals = Object.values(RESULTS[m][c]);
+    b[band].push(...vals.map(v=>v.pf==='PASS'?1:0));
+  });
+  Object.keys(b).forEach(band => {
+    const arr = b[band];
+    bands[band].push(arr.length ? Math.round(100*arr.filter(x=>x).length/arr.length) : 0);
+  });
+});
+
+mkChart('chartBandPass','bar',['Hard','Medium','Easy','Control'],
+  MODELS.map((m,i)=>({
+    label:MODEL_LABELS[i], backgroundColor:MODEL_BG[i],
+    borderColor:MODEL_COLORS[i], borderWidth:1, borderRadius:3,
+    data: ['Hard','Medium','Easy','Control'].map(b=>bands[b][i])
+  })),
+  {scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}
+);
+
+// Tier failure bar
+const tierFails = TIERS.map(t => {
+  let f=0;
+  MODELS.forEach(m => COMBOS.forEach(c => { if(RESULTS[m][c][t]?.pf==='FAIL') f++; }));
+  return f;
+});
+mkChart('chartTierFail','bar',TIERS.map(t=>'T'+t),
+  [{label:'Total Failures',data:tierFails,backgroundColor:'#fce4d6',borderColor:'#832121',borderWidth:1,borderRadius:4}],
+  {plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1}}}}
+);
+
+// Heatmaps
+function buildHeatmap(model, containerId) {
+  const el = document.getElementById(containerId);
+  let html = '<table class="heat"><thead><tr><th class="left">Combo</th><th class="left">Categories</th><th>Band</th>';
+  TIERS.forEach(t => html += `<th>T${t}</th>`);
+  html += '<th>Pass%</th></tr></thead><tbody>';
+  COMBOS.forEach(c => {
+    const m = META[c]; const r = RESULTS[model][c];
+    html += `<tr><td class="label">${c}</td><td class="label" style="font-weight:400;font-size:11px">${m.cats}</td>`;
+    html += `<td class="band band-${m.band.toLowerCase()}">${m.band}</td>`;
+    TIERS.forEach(t => {
+      const v = r[t]; const cls = v.pf==='PASS'?'pass':'fail';
+      html += `<td class="${cls}" title="${v.pf} — ${v.soft}%">${v.pf[0]}</td>`;
+    });
+    const pr = passRate(model, c);
+    html += `<td style="font-weight:700;color:${pr>=70?'#1e5c1e':'#832121'}">${pr}%</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+buildHeatmap('claude-opus-4-8',   'heat-opus');
+buildHeatmap('claude-sonnet-4-6', 'heat-sonnet');
+buildHeatmap('claude-haiku-4-5',  'heat-haiku');
+
+// Soft score line charts per combo
+const sc = document.getElementById('softCharts');
+COMBOS.forEach(c => {
+  const div = document.createElement('div');
+  div.className = 'card';
+  const cid = 'soft_'+c;
+  div.innerHTML = `<h3>${c} — ${META[c].label}</h3><canvas id="${cid}"></canvas>`;
+  sc.appendChild(div);
+  setTimeout(() => {
+    mkChart(cid,'line',TIERS.map(t=>'T'+t),
+      MODELS.map((m,i)=>({
+        label:MODEL_LABELS[i], borderColor:MODEL_COLORS[i],
+        backgroundColor:MODEL_BG[i]+'88', fill:false, tension:.3, pointRadius:4,
+        data:TIERS.map(t=>RESULTS[m][c][t]?.soft??0)
+      })),
+      {scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}
+    );
+  },0);
+});
+
+function show(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
