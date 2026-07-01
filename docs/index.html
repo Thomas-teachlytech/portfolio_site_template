@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thomas | Data Analyst & AI Practitioner</title>
+  <meta name="description" content="Thomas is a data analyst, AI practitioner, and content creator helping organizations unlock insights through Python, SQL, and machine learning." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ---- HERO ---- */
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 4rem 0;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(ellipse at center, rgba(6,182,212,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4rem;
+      align-items: center;
+      width: 100%;
+    }
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .hero-eyebrow .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-success);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .hero-eyebrow span {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      letter-spacing: 0.05em;
+    }
+    .hero-name {
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      line-height: 1.1;
+      background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    .hero-role {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      color: var(--color-muted);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      min-height: 2rem;
+    }
+    .hero-role #typed {
+      color: var(--color-accent);
+      font-family: var(--font-mono);
+    }
+    .hero-role .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--color-accent);
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: pulse-dot 1s step-end infinite;
+    }
+    .hero-desc {
+      color: var(--color-muted);
+      font-size: 1.05rem;
+      max-width: 540px;
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .hero-avatar {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface) 100%);
+      border: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .hero-avatar::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--color-accent), var(--color-accent-2), transparent, var(--color-accent));
+      z-index: -1;
+      animation: spin 6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .avatar-initials {
+      font-size: 4rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ---- STAT ROW ---- */
+    .stat-row {
+      display: flex;
+      gap: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+    .stat { display: flex; flex-direction: column; }
+    .stat-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      font-family: var(--font-mono);
+    }
+    .stat-num span { color: var(--color-accent); }
+    .stat-label { font-size: 0.78rem; color: var(--color-muted-2); margin-top: 0.1rem; }
+
+    /* ---- SECTION: GOALS ---- */
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+    .goal-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: all var(--transition);
+    }
+    .goal-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+    .goal-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--color-accent-glow);
+      border: 1px solid rgba(59,130,246,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+    .goal-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .goal-card p { font-size: 0.88rem; color: var(--color-muted); line-height: 1.65; }
+
+    /* ---- SECTION: CONTENT / LINKS ---- */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .content-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: all var(--transition);
+    }
+    .content-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .content-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .platform-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .content-card h3 { font-size: 1rem; font-weight: 600; }
+    .content-card p { font-size: 0.87rem; color: var(--color-muted); line-height: 1.6; flex: 1; }
+    .content-card .btn { align-self: flex-start; font-size: 0.82rem; padding: 0.45rem 1rem; }
+
+    /* ---- SECTION: INTERESTS ---- */
+    .interests-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+    .interest-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      transition: all var(--transition);
+    }
+    .interest-chip:hover {
+      border-color: var(--color-accent);
+      color: var(--color-text);
+      background: var(--color-accent-glow);
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-avatar { width: 160px; height: 160px; order: -1; }
+      .avatar-initials { font-size: 2.5rem; }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .stat-row { gap: 1.25rem; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">Thomas<span>.</span>dev</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="portfolio.html">Portfolio</a></li>
+      <li><a href="mailto:Thomas@teachlytech.info" class="nav-cta">Contact Me</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-content">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <div>
+            <div class="hero-eyebrow fade-up">
+              <div class="dot"></div>
+              <span>Open to new opportunities</span>
+            </div>
+            <h1 class="hero-name fade-up-2">Thomas<br/>Williams</h1>
+            <div class="hero-role fade-up-3">
+              <span id="typed"></span><span class="cursor"></span>
+            </div>
+            <p class="hero-desc fade-up-3">
+              I turn raw data into clear narratives — using Python, SQL, and AI to build pipelines, dashboards, and analyses that actually drive decisions. I also create educational content on LinkedIn, Substack, and YouTube for professionals leveling up in data &amp; AI.
+            </p>
+            <div class="hero-actions fade-up-4">
+              <a href="portfolio.html" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m8 21 4-4 4 4"/><path d="M12 17v4"/></svg>
+                View Projects
+              </a>
+              <a href="about.html" class="btn btn-outline">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Background
+              </a>
+            </div>
+
+            <div class="stat-row fade-up-4">
+              <div class="stat">
+                <div class="stat-num">4<span>+</span></div>
+                <div class="stat-label">Portfolio Projects</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">3<span>+</span></div>
+                <div class="stat-label">Years in Data</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">5<span>+</span></div>
+                <div class="stat-label">Tech Stacks</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">∞</div>
+                <div class="stat-label">Curiosity</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-avatar fade-in">
+            <div class="avatar-initials">TW</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOALS -->
+    <section>
+      <div class="container">
+        <div class="section-label">What I'm Building Toward</div>
+        <h2 class="section-title">Goals &amp; Mission</h2>
+        <p class="section-subtitle">
+          I'm on a mission to bridge the gap between raw data and real-world decisions — while helping others do the same through content and community.
+        </p>
+
+        <div class="goals-grid">
+          <div class="goal-card" data-reveal>
+            <div class="goal-icon">🔍</div>
+            <h3>Land a Senior Data Role</h3>
+            <p>Targeting analytics engineering, BI, or AI-adjacent positions at companies where data is a first-class citizen — not an afterthought.</p>
+          </div>
+          <div class="goal-card" data-reveal>
+            <div class="goal-icon">🤖</div>
+            <h3>Build AI-Powered Products</h3>
+            <p>Shipping tools that combine LLMs with structured data — from natural-language query engines to automated reporting pipelines.</p>
+          </div>
+          <div class="goal-card" data-reveal>
+            <div class="goal-icon">📢</div>
+            <h3>Grow an Educator Brand</h3>
+            <p>Creating content that helps analysts and engineers understand AI, data pipelines, and modern tooling — demystified and actionable.</p>
+          </div>
+          <div class="goal-card" data-reveal>
+            <div class="goal-icon">🏆</div>
+            <h3>Sports Analytics Thought Leadership</h3>
+            <p>Applying data science to sport — from transfer market modeling to financial ops — and sharing those findings with teams and fans alike.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERESTS -->
+    <section style="padding-top: 0;">
+      <div class="container">
+        <div class="divider"></div>
+        <div style="padding-top: 3rem;">
+          <div class="section-label">What Lights Me Up</div>
+          <h2 class="section-title">Interests &amp; Passions</h2>
+          <div class="interests-row">
+            <span class="interest-chip">⚽ Soccer Analytics</span>
+            <span class="interest-chip">🏈 Sports Business</span>
+            <span class="interest-chip">🤖 Large Language Models</span>
+            <span class="interest-chip">🐍 Python Ecosystem</span>
+            <span class="interest-chip">📊 Data Visualization</span>
+            <span class="interest-chip">🗄️ SQL & Databases</span>
+            <span class="interest-chip">📈 Financial Data</span>
+            <span class="interest-chip">🎙️ Podcasting & Video</span>
+            <span class="interest-chip">✍️ Technical Writing</span>
+            <span class="interest-chip">🏗️ Data Engineering</span>
+            <span class="interest-chip">🧪 A/B Testing</span>
+            <span class="interest-chip">☁️ Cloud Pipelines</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENT / SOCIALS -->
+    <section>
+      <div class="container">
+        <div class="section-label">Find Me Online</div>
+        <h2 class="section-title">Content &amp; Community</h2>
+        <p class="section-subtitle">
+          I publish regularly on data, AI, and sports analytics. Follow along wherever you spend your time.
+        </p>
+
+        <div class="content-grid">
+          <div class="content-card" data-reveal>
+            <div class="content-card-header">
+              <div class="platform-icon" style="background:#0a66c2;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </div>
+              <h3>LinkedIn</h3>
+            </div>
+            <p>Professional updates, project breakdowns, and takes on the data &amp; AI industry. Where I connect with hiring managers, analysts, and builders.</p>
+            <div class="tags">
+              <span class="tag">#DataAnalytics</span>
+              <span class="tag">#AI</span>
+              <span class="tag">#Python</span>
+            </div>
+            <a href="https://www.linkedin.com/in/thomas-williams-data" target="_blank" rel="noopener" class="btn btn-outline">Follow on LinkedIn →</a>
+          </div>
+
+          <div class="content-card" data-reveal>
+            <div class="platform-icon" style="background:#ff6719; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-bottom: -0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3 3h18v18H3z" opacity="0"/><path d="M22 2H2L10 13.46V20l4 2v-8.54L22 2z" fill="white"/></svg>
+            </div>
+            <div class="content-card-header" style="margin-top:0.5rem;">
+              <div class="platform-icon" style="background:#ff6719;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
+              </div>
+              <h3>X / Twitter</h3>
+            </div>
+            <p>Hot takes, quick data insights, tool recommendations, and live commentary on sports &amp; tech. Fast, casual, and always curious.</p>
+            <div class="tags">
+              <span class="tag">#DataTwitter</span>
+              <span class="tag">#MachineLearning</span>
+            </div>
+            <a href="https://twitter.com/thomas_data" target="_blank" rel="noopener" class="btn btn-outline">Follow on X →</a>
+          </div>
+
+          <div class="content-card" data-reveal>
+            <div class="content-card-header">
+              <div class="platform-icon" style="background:#ff6719;">
+                <svg width="18" height="18" viewBox="0 0 28 28" fill="white"><path d="M14 2C7.37 2 2 7.37 2 14s5.37 12 12 12 12-5.37 12-12S20.63 2 14 2zm0 3c1.34 0 2.62.26 3.79.72L10.1 18.62C8.79 17.2 8 15.19 8 13c0-3.31 2.69-6 6-6zm0 18c-1.54 0-2.99-.38-4.26-1.05l7.77-13.07C18.7 9.9 20 11.3 20 13c0 3.31-2.69 6-6 6z"/></svg>
+              </div>
+              <h3>Substack</h3>
+            </div>
+            <p>Long-form newsletters on data career strategy, tutorials on Python &amp; SQL, and deep-dives into sports analytics and AI trends.</p>
+            <div class="tags">
+              <span class="tag">Weekly</span>
+              <span class="tag">Free + Paid</span>
+            </div>
+            <a href="https://thomaswilliams.substack.com" target="_blank" rel="noopener" class="btn btn-outline">Read on Substack →</a>
+          </div>
+
+          <div class="content-card" data-reveal>
+            <div class="content-card-header">
+              <div class="platform-icon" style="background:#000;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.79 1.52V6.76a4.85 4.85 0 0 1-1.02-.07z"/></svg>
+              </div>
+              <h3>TikTok / YouTube</h3>
+            </div>
+            <p>Short-form and long-form video content: project walkthroughs, data storytelling, Python tips, and "data for sports" explainers.</p>
+            <div class="tags">
+              <span class="tag">#DataTok</span>
+              <span class="tag">Tutorials</span>
+            </div>
+            <a href="https://www.youtube.com/@thomas-data" target="_blank" rel="noopener" class="btn btn-outline">Watch on YouTube →</a>
+          </div>
+
+          <div class="content-card" data-reveal>
+            <div class="content-card-header">
+              <div class="platform-icon" style="background:#12100e;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+              </div>
+              <h3>GitHub</h3>
+            </div>
+            <p>Open source code, Jupyter notebooks, analysis repos, and everything I'm building in public. All projects are documented and reproducible.</p>
+            <div class="tags">
+              <span class="tag">Open Source</span>
+              <span class="tag">Notebooks</span>
+            </div>
+            <a href="https://github.com/Thomas-teachlytech" target="_blank" rel="noopener" class="btn btn-outline">View on GitHub →</a>
+          </div>
+
+          <div class="content-card" data-reveal>
+            <div class="content-card-header">
+              <div class="platform-icon" style="background:#02b875;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+              </div>
+              <h3>Medium</h3>
+            </div>
+            <p>In-depth technical articles on data engineering patterns, AI use cases, and project retrospectives. Syndicated to Towards Data Science.</p>
+            <div class="tags">
+              <span class="tag">TDS</span>
+              <span class="tag">Technical</span>
+            </div>
+            <a href="https://medium.com/@thomas-williams-data" target="_blank" rel="noopener" class="btn btn-outline">Read on Medium →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /page-content -->
+
+  <footer>
+    <div class="container">
+      <p>Built with purpose · <a href="mailto:Thomas@teachlytech.info">Thomas@teachlytech.info</a> · © 2025 Thomas Williams</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

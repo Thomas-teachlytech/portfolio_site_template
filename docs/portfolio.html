@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio — Thomas Williams</title>
+  <meta name="description" content="Data and AI projects by Thomas Williams — e-commerce pipelines, sports analytics, financial modeling, and platform testing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ---- PAGE HERO ---- */
+    .page-hero {
+      padding: 5rem 0 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -200px;
+      width: 700px; height: 600px;
+      background: radial-gradient(ellipse, rgba(59,130,246,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ---- FILTER BAR ---- */
+    .filter-bar {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .filter-btn {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-muted);
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+      color: #fff;
+    }
+
+    /* ---- PROJECT GRID ---- */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .project-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all var(--transition);
+    }
+    .project-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--color-accent);
+    }
+
+    .project-banner {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, var(--color-surface));
+    }
+    .banner-icon {
+      font-size: 3.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .banner-bg-1 { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+    .banner-bg-2 { background: linear-gradient(135deg, #0f2a1a 0%, #064e3b 100%); }
+    .banner-bg-3 { background: linear-gradient(135deg, #1a0f0f 0%, #450a0a 100%); }
+    .banner-bg-4 { background: linear-gradient(135deg, #1a0f2a 0%, #3b0764 100%); }
+
+    .project-status {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      z-index: 2;
+    }
+    .status-complete { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .status-wip      { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+
+    .project-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .project-category {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+
+    .project-card h3 {
+      font-size: 1.1rem;
+      line-height: 1.35;
+    }
+
+    .project-card p {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .project-highlights {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .project-highlights li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--color-muted);
+    }
+    .project-highlights li::before {
+      content: '▸';
+      color: var(--color-accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .project-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      padding: 0.35rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      transition: all var(--transition);
+    }
+    .project-link:hover {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    /* ---- FEATURED PROJECT (WIDE) ---- */
+    .project-card.featured {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: auto;
+    }
+    .project-card.featured .project-banner {
+      height: 100%;
+      min-height: 200px;
+    }
+    .project-card.featured .project-body {
+      padding: 2rem;
+    }
+    .project-card.featured h3 { font-size: 1.3rem; }
+    .project-card.featured .project-footer {
+      grid-column: 2;
+    }
+
+    /* ---- BLOG CONTENT SECTION ---- */
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+    .blog-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all var(--transition);
+    }
+    .blog-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .blog-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--color-muted-2);
+    }
+    .blog-meta .platform-tag {
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+    }
+    .blog-card h4 { font-size: 0.95rem; line-height: 1.4; }
+    .blog-card p { font-size: 0.83rem; color: var(--color-muted); line-height: 1.65; flex: 1; }
+    .blog-card a { font-size: 0.8rem; align-self: flex-start; }
+
+    /* ---- CTA STRIP ---- */
+    .cta-strip {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(6,182,212,0.04));
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: var(--radius);
+      margin-top: 2rem;
+    }
+    .cta-strip h2 { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .cta-strip p { color: var(--color-muted); margin-bottom: 1.75rem; }
+    .cta-strip .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 768px) {
+      .project-card.featured {
+        grid-template-columns: 1fr;
+      }
+      .project-card.featured .project-banner { height: 160px; }
+      .project-card.featured .project-footer { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">Thomas<span>.</span>dev</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="portfolio.html">Portfolio</a></li>
+      <li><a href="mailto:Thomas@teachlytech.info" class="nav-cta">Contact Me</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-content">
+
+    <!-- PAGE HERO -->
+    <div class="page-hero">
+      <div class="container">
+        <div class="section-label fade-up">Selected Work</div>
+        <h1 class="fade-up-2" style="font-size: clamp(2.2rem, 5vw, 3.5rem); margin-bottom: 0.75rem;">Portfolio Projects</h1>
+        <p class="fade-up-3" style="color:var(--color-muted); font-size:1.05rem; max-width:560px;">
+          Real projects built with real data — from AI-powered e-commerce pipelines to sports analytics dashboards and financial modeling tools.
+        </p>
+
+        <div class="filter-bar fade-up-4">
+          <button class="filter-btn active" data-filter="all">All Projects</button>
+          <button class="filter-btn" data-filter="ai">AI / LLM</button>
+          <button class="filter-btn" data-filter="sports">Sports Analytics</button>
+          <button class="filter-btn" data-filter="data-eng">Data Engineering</button>
+          <button class="filter-btn" data-filter="finance">Finance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <section>
+      <div class="container">
+        <div class="projects-grid" id="projects-grid">
+
+          <!-- PROJECT 1: FEATURED — E-commerce AI Pipeline -->
+          <div class="project-card featured" data-category="ai data-eng" data-reveal>
+            <div class="project-banner banner-bg-1">
+              <span class="banner-icon">🤖</span>
+              <span class="project-status status-complete">✓ Complete</span>
+            </div>
+            <div style="display:flex; flex-direction:column;">
+              <div class="project-body">
+                <div class="project-category">AI · Data Engineering · E-commerce</div>
+                <h3>E-commerce Natural Language Query Engine</h3>
+                <p>A full-stack AI pipeline that lets non-technical users ask business questions in plain English and get accurate SQL-backed answers from a live database. Built with a custom LLM router, a structured database connector, and a transformer layer that formats results into human-readable reports.</p>
+                <ul class="project-highlights">
+                  <li>LLM-powered question router that classifies query intent and selects the right data source</li>
+                  <li>Python pipeline: <code style="font-family:var(--font-mono);font-size:0.8rem;color:var(--color-accent-2);">api_client → question_router → db_connector → transformer → llm_connector</code></li>
+                  <li>Handles inventory, sales, customer, and logistics queries from a single natural-language interface</li>
+                  <li>Modular design — each component is independently swappable (swap GPT-4 for Claude, swap Postgres for SQLite)</li>
+                </ul>
+                <div class="tags" style="margin-top:0.25rem;">
+                  <span class="tag">Python</span>
+                  <span class="tag">LLMs</span>
+                  <span class="tag">PostgreSQL</span>
+                  <span class="tag">FastAPI</span>
+                  <span class="tag">OpenAI</span>
+                  <span class="tag">NLP</span>
+                </div>
+              </div>
+              <div class="project-footer">
+                <div class="project-links">
+                  <a href="https://github.com/Thomas-teachlytech" target="_blank" rel="noopener" class="project-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                    View Code
+                  </a>
+                  <a href="#" class="project-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Case Study
+                  </a>
+                </div>
+                <div class="tags">
+                  <span class="tag">🌟 Featured</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECT 2: Soccer Analytics -->
+          <div class="project-card" data-category="sports" data-reveal>
+            <div class="project-banner banner-bg-2" style="position:relative;">
+              <span class="banner-icon">⚽</span>
+              <span class="project-status status-complete">✓ Complete</span>
+            </div>
+            <div class="project-body">
+              <div class="project-category">Sports Analytics · Visualization</div>
+              <h3>Top 5 European Leagues — Player Analytics Dashboard</h3>
+              <p>Interactive data visualization suite covering player performance, transfer valuations, and season statistics across the Premier League, La Liga, Bundesliga, Serie A, and Ligue 1 (2017–2020). Merges Transfermarkt contract data with Fbref performance metrics.</p>
+              <ul class="project-highlights">
+                <li>3 seasons of player-level data: goals, assists, xG, market value, contract length</li>
+                <li>Transfer value vs. performance scatter plots with position filtering</li>
+                <li>Interactive Jupyter menu for league and season selection</li>
+              </ul>
+              <div class="tags">
+                <span class="tag">Python</span>
+                <span class="tag">Pandas</span>
+                <span class="tag">Plotly</span>
+                <span class="tag">Jupyter</span>
+                <span class="tag">Transfermarkt</span>
+                <span class="tag">Fbref</span>
+              </div>
+            </div>
+            <div class="project-footer">
+              <div class="project-links">
+                <a href="https://github.com/Thomas-teachlytech" target="_blank" rel="noopener" class="project-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  View Code
+                </a>
+                <a href="#" class="project-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+                  Notebook
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECT 3: Super Bowl / Sports Business Ops -->
+          <div class="project-card" data-category="sports finance" data-reveal>
+            <div class="project-banner banner-bg-3" style="position:relative;">
+              <span class="banner-icon">🏈</span>
+              <span class="project-status status-complete">✓ Complete</span>
+            </div>
+            <div class="project-body">
+              <div class="project-category">Sports Business · Financial Analysis</div>
+              <h3>Sports Business Operations & Financial Modeling</h3>
+              <p>End-to-end financial analysis of a sports franchise's operational and contract data — including team season financials, player contract structures, and ticket/revenue modeling. Built to simulate the analyst workflow inside a real front office.</p>
+              <ul class="project-highlights">
+                <li>Player contract vs. performance ROI modeling across multi-year deals</li>
+                <li>Team season financial P&amp;L breakdown with revenue stream segmentation</li>
+                <li>Exploratory data analysis on sports operations dataset (Jupyter + Excel)</li>
+              </ul>
+              <div class="tags">
+                <span class="tag">Python</span>
+                <span class="tag">Pandas</span>
+                <span class="tag">Excel</span>
+                <span class="tag">Jupyter</span>
+                <span class="tag">Financial Modeling</span>
+              </div>
+            </div>
+            <div class="project-footer">
+              <div class="project-links">
+                <a href="https://github.com/Thomas-teachlytech" target="_blank" rel="noopener" class="project-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  View Code
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECT 4: Platform Testing / AI Capability Suite -->
+          <div class="project-card" data-category="ai data-eng" data-reveal>
+            <div class="project-banner banner-bg-4" style="position:relative;">
+              <span class="banner-icon">🧪</span>
+              <span class="project-status status-wip">⚡ Active</span>
+            </div>
+            <div class="project-body">
+              <div class="project-category">AI Tooling · Data Engineering · APIs</div>
+              <h3>AI Platform Testing & Multi-Source Data Pipeline</h3>
+              <p>A modular testing and reporting framework for evaluating AI capabilities against real-world data tasks. Pulls live data from the NHL API and FRED (Federal Reserve Economic Data) to benchmark LLM performance on structured data analysis, code generation, and report writing.</p>
+              <ul class="project-highlights">
+                <li>Live NHL game &amp; player stats pipeline with automated ingestion</li>
+                <li>FRED macroeconomic data connector for financial context injection</li>
+                <li>LLM report builder that narrates trends in plain English from raw data</li>
+                <li>Capability runner for A/B testing prompts and model outputs</li>
+              </ul>
+              <div class="tags">
+                <span class="tag">Python</span>
+                <span class="tag">NHL API</span>
+                <span class="tag">FRED API</span>
+                <span class="tag">LLMs</span>
+                <span class="tag">Anthropic</span>
+                <span class="tag">Dashboards</span>
+              </div>
+            </div>
+            <div class="project-footer">
+              <div class="project-links">
+                <a href="https://github.com/Thomas-teachlytech" target="_blank" rel="noopener" class="project-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  View Code
+                </a>
+                <a href="#" class="project-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Live Demo
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENT / BLOG SECTION -->
+    <section>
+      <div class="container">
+        <div class="section-label">Content Portfolio</div>
+        <h2 class="section-title">Articles &amp; Write-ups</h2>
+        <p class="section-subtitle">Turning project work into educational content for analysts, engineers, and data-curious professionals.</p>
+
+        <div class="blog-grid">
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">Substack</span>
+              <span>·</span>
+              <span>Data Engineering</span>
+            </div>
+            <h4>How I Built an NLP Query Engine Over a Live E-commerce Database</h4>
+            <p>A technical breakdown of routing natural-language questions to the right SQL query using an LLM — including the pitfalls, the prompt structure, and the transformer layer that formats results.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Read Article →</a>
+          </div>
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">LinkedIn</span>
+              <span>·</span>
+              <span>Sports Analytics</span>
+            </div>
+            <h4>What 3 Seasons of Transfer Data Tells Us About the Market for Midfielders</h4>
+            <p>Merging Transfermarkt valuations with Fbref performance data to find systematically over- and under-valued midfielders across Europe's top leagues — with interactive charts.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Read on LinkedIn →</a>
+          </div>
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">Medium</span>
+              <span>·</span>
+              <span>AI / LLMs</span>
+            </div>
+            <h4>Testing Claude vs GPT-4 on Structured Data Tasks: What I Found After 200 Prompts</h4>
+            <p>Real benchmark results from my platform testing project — comparing LLM outputs on SQL generation, data narration, and financial report writing using live API data.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Read on Medium →</a>
+          </div>
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">YouTube</span>
+              <span>·</span>
+              <span>Tutorial</span>
+            </div>
+            <h4>Build a Sports Analytics Dashboard in Python — Full Walkthrough</h4>
+            <p>45-minute video tutorial building the soccer analytics dashboard from scratch: data ingestion, Pandas wrangling, Plotly visualization, and Jupyter widgets for interactivity.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Watch on YouTube →</a>
+          </div>
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">Substack</span>
+              <span>·</span>
+              <span>Career</span>
+            </div>
+            <h4>The Data Analyst's Starter Guide to Working With APIs (No CS Degree Required)</h4>
+            <p>Practical guide to consuming REST APIs in Python — auth, pagination, rate limits, and storing data — using the NHL and FRED APIs as worked examples.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Read Article →</a>
+          </div>
+
+          <div class="blog-card" data-reveal>
+            <div class="blog-meta">
+              <span class="platform-tag">LinkedIn</span>
+              <span>·</span>
+              <span>Finance</span>
+            </div>
+            <h4>How Sports Teams Actually Think About Player ROI (And What Data Analysts Miss)</h4>
+            <p>Using my sports ops financial dataset to explain the contract vs. performance model that front offices use — and where pure stats miss the business reality of roster decisions.</p>
+            <a href="#" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.9rem;">Read on LinkedIn →</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section>
+      <div class="container">
+        <div class="cta-strip">
+          <h2>Want to build something together?</h2>
+          <p>Whether you need a data pipeline, an analytics dashboard, AI integration, or help turning your work into content — I'm open to it.</p>
+          <div class="btn-group">
+            <a href="mailto:Thomas@teachlytech.info" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Get in Touch
+            </a>
+            <a href="about.html" class="btn btn-outline">View My Background</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>Built with purpose · <a href="mailto:Thomas@teachlytech.info">Thomas@teachlytech.info</a> · © 2025 Thomas Williams</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Filter functionality
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card[data-category]');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+
+        projectCards.forEach(card => {
+          const cats = card.dataset.category || '';
+          if (filter === 'all' || cats.includes(filter)) {
+            card.style.display = '';
+            card.style.animation = 'fadeUp 0.4s ease both';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
